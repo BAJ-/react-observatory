@@ -3,6 +3,7 @@ import type { PropInfo } from './plugins/schemaPlugin'
 import { generateProps } from './generateProps'
 import { resolveProps, type SerializableProps } from './resolveProps'
 import { PropsPanel } from './PropsPanel'
+import { ErrorBoundary } from './ErrorBoundary'
 import './App.css'
 
 function readPropsFromUrl(): SerializableProps {
@@ -111,7 +112,9 @@ function App() {
         </aside>
         <main className="observatory-preview">
           {Component ? (
-            <Component {...resolvedProps} />
+            <ErrorBoundary key={JSON.stringify(serializableProps)}>
+              <Component {...resolvedProps} />
+            </ErrorBoundary>
           ) : (
             <p>Loading component...</p>
           )}

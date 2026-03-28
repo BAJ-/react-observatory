@@ -57,3 +57,28 @@
   color: #666;
   font-size: 0.85rem;
 }
+
+.error-boundary {
+  padding: 1rem;
+  border: 1px solid #e55;
+  border-radius: 6px;
+  background: rgba(255, 50, 50, 0.08);
+}
+
+.error-boundary h4 {
+  margin: 0 0 0.5rem;
+  color: #e55;
+}
+
+.error-boundary pre {
+  margin: 0 0 0.5rem;
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  color: #ccc;
+}
+
+.error-boundary p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #888;
+}

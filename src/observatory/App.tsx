@@ -40,7 +40,7 @@ function App() {
     setError(null)
 
     const loadComponent = import(
-      /* @vite-ignore */ `./${componentPath.replace(/^src\//, '')}`
+      /* @vite-ignore */ `../${componentPath.replace(/^src\//, '')}`
     ).then((module) => {
       const Comp =
         module.default ??

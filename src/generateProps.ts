@@ -1,9 +1,13 @@
 import type { JSONSchema7 } from 'json-schema'
 
-export function generateProps(schema: JSONSchema7): Record<string, unknown> {
-  const root = schema.definitions
+export function getRootSchema(schema: JSONSchema7): JSONSchema7 {
+  return schema.definitions
     ? (Object.values(schema.definitions)[0] as JSONSchema7)
     : schema
+}
+
+export function generateProps(schema: JSONSchema7): Record<string, unknown> {
+  const root = getRootSchema(schema)
 
   if (root.type !== 'object' || !root.properties) return {}
 
@@ -33,6 +37,6 @@ function generateValue(schema: JSONSchema7): unknown {
     case 'object':
       return {}
     default:
-      return () => {}
+      return 'noop'
   }
 }

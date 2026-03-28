@@ -1,8 +1,6 @@
 import type { JSONSchema7 } from 'json-schema'
 
-export function generateProps(
-  schema: JSONSchema7,
-): Record<string, unknown> {
+export function generateProps(schema: JSONSchema7): Record<string, unknown> {
   const root = schema.definitions
     ? (Object.values(schema.definitions)[0] as JSONSchema7)
     : schema

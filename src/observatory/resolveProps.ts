@@ -1,5 +1,5 @@
-import type { JSONSchema7 } from 'json-schema'
-import { getRootSchema } from './generateProps'
+import type { PropInfo } from './plugins/schemaPlugin'
+import { UNSET } from './generateProps'
 
 type FunctionBehavior = 'noop' | 'log'
 
@@ -18,18 +18,16 @@ export type SerializableProps = Record<string, unknown>
 
 export function resolveProps(
   serializable: SerializableProps,
-  schema: JSONSchema7,
+  props: PropInfo[],
 ): Record<string, unknown> {
-  const root = getRootSchema(schema)
-
-  if (root.type !== 'object' || !root.properties) return { ...serializable }
-
   const resolved: Record<string, unknown> = {}
 
   for (const [key, value] of Object.entries(serializable)) {
-    const propSchema = root.properties[key] as JSONSchema7 | undefined
+    if (value === UNSET) continue
 
-    if (propSchema && isFunctionSchema(propSchema)) {
+    const prop = props.find((p) => p.name === key)
+
+    if (prop?.type === 'function') {
       const behavior = (value as FunctionBehavior) ?? 'noop'
       resolved[key] =
         functionBehaviors[behavior]?.(key) ?? functionBehaviors.noop(key)
@@ -39,10 +37,6 @@ export function resolveProps(
   }
 
   return resolved
-}
-
-export function isFunctionSchema(schema: JSONSchema7): boolean {
-  return !schema.type && !schema.enum && !schema.anyOf && !schema.oneOf
 }
 
 export const functionBehaviorOptions: {

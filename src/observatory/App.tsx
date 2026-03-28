@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { JSONSchema7 } from 'json-schema'
+import type { PropInfo } from './plugins/schemaPlugin'
 import { generateProps } from './generateProps'
 import { resolveProps, type SerializableProps } from './resolveProps'
 import { PropsPanel } from './PropsPanel'
@@ -27,7 +27,7 @@ function App() {
   )
 
   const [Component, setComponent] = useState<React.ComponentType | null>(null)
-  const [schema, setSchema] = useState<JSONSchema7 | null>(null)
+  const [propInfos, setPropInfos] = useState<PropInfo[]>([])
   const [serializableProps, setSerializableProps] =
     useState<SerializableProps>(readPropsFromUrl)
   const [error, setError] = useState<string | null>(null)
@@ -36,7 +36,7 @@ function App() {
     if (!componentPath) return
 
     setComponent(null)
-    setSchema(null)
+    setPropInfos([])
     setError(null)
 
     const loadComponent = import(
@@ -57,11 +57,11 @@ function App() {
     )
       .then((res) => res.json())
       .then((data) => {
-        if (data.schema) {
-          setSchema(data.schema)
+        if (data.props) {
+          setPropInfos(data.props)
           const urlProps = readPropsFromUrl()
           if (Object.keys(urlProps).length === 0) {
-            const generated = generateProps(data.schema)
+            const generated = generateProps(data.props)
             setSerializableProps(generated)
             writePropsToUrl(generated)
           }
@@ -81,9 +81,10 @@ function App() {
     })
   }, [])
 
-  const resolvedProps = schema
-    ? resolveProps(serializableProps, schema)
-    : serializableProps
+  const resolvedProps =
+    propInfos.length > 0
+      ? resolveProps(serializableProps, propInfos)
+      : serializableProps
 
   if (!componentPath) {
     return (
@@ -98,9 +99,9 @@ function App() {
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <div className="observatory-layout">
         <aside className="observatory-panel">
-          {schema ? (
+          {propInfos.length > 0 ? (
             <PropsPanel
-              schema={schema}
+              props={propInfos}
               values={serializableProps}
               onChange={handlePropChange}
             />

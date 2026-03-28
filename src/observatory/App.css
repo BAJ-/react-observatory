@@ -53,11 +53,6 @@
   font-size: 0.85rem;
 }
 
-.props-field input[type='checkbox'] {
-  width: 1rem;
-  height: 1rem;
-}
-
 .props-empty {
   color: #666;
   font-size: 0.85rem;

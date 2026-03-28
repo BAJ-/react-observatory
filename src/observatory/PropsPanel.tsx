@@ -1,106 +1,121 @@
-import type { JSONSchema7 } from 'json-schema'
-import { getRootSchema } from './generateProps'
-import {
-  isFunctionSchema,
-  functionBehaviorOptions,
-  type SerializableProps,
-} from './resolveProps'
+import type { PropInfo } from './plugins/schemaPlugin'
+import { UNSET } from './generateProps'
+import { functionBehaviorOptions, type SerializableProps } from './resolveProps'
 
 interface PropsPanelProps {
-  schema: JSONSchema7
+  props: PropInfo[]
   values: SerializableProps
   onChange: (key: string, value: unknown) => void
 }
 
-export function PropsPanel({ schema, values, onChange }: PropsPanelProps) {
-  const root = getRootSchema(schema)
-
-  if (root.type !== 'object' || !root.properties) {
+export function PropsPanel({ props, values, onChange }: PropsPanelProps) {
+  if (props.length === 0) {
     return <p className="props-empty">No props detected.</p>
   }
 
   return (
     <div className="props-panel">
       <h3>Props</h3>
-      {Object.entries(root.properties).map(([key, rawSchema]) => {
-        const propSchema = rawSchema as JSONSchema7
-        return (
-          <div key={key} className="props-field">
-            <label htmlFor={`prop-${key}`}>{key}</label>
-            {renderControl(key, propSchema, values[key], onChange)}
-          </div>
-        )
-      })}
+      {props.map((prop) => (
+        <div key={prop.name} className="props-field">
+          <label htmlFor={`prop-${prop.name}`}>
+            {prop.name}
+            {!prop.required && <span className="props-optional"> ?</span>}
+          </label>
+          {renderControl(prop, values[prop.name], onChange)}
+        </div>
+      ))}
     </div>
   )
 }
 
 function renderControl(
-  key: string,
-  schema: JSONSchema7,
+  prop: PropInfo,
   value: unknown,
   onChange: (key: string, value: unknown) => void,
 ) {
-  if (isFunctionSchema(schema)) {
-    return (
-      <select
-        id={`prop-${key}`}
-        value={(value as string) ?? 'noop'}
-        onChange={(e) => onChange(key, e.target.value)}
-      >
-        {functionBehaviorOptions.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    )
-  }
+  const unsetOption = !prop.required ? (
+    <option value={UNSET}>Unset</option>
+  ) : null
 
-  if (schema.enum) {
-    return (
-      <select
-        id={`prop-${key}`}
-        value={String(value ?? '')}
-        onChange={(e) => onChange(key, e.target.value)}
-      >
-        {schema.enum.map((opt) => (
-          <option key={String(opt)} value={String(opt)}>
-            {String(opt)}
-          </option>
-        ))}
-      </select>
-    )
-  }
-
-  switch (schema.type) {
+  switch (prop.type) {
+    case 'function':
+      return (
+        <select
+          id={`prop-${prop.name}`}
+          value={(value ?? 'noop') as string}
+          onChange={(e) => onChange(prop.name, e.target.value)}
+        >
+          {unsetOption}
+          {functionBehaviorOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      )
+    case 'enum':
+      return (
+        <select
+          id={`prop-${prop.name}`}
+          value={(value ?? '') as string}
+          onChange={(e) => onChange(prop.name, e.target.value)}
+        >
+          {unsetOption}
+          {prop.enumValues?.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+      )
     case 'boolean':
       return (
-        <input
-          id={`prop-${key}`}
-          type="checkbox"
-          checked={Boolean(value)}
-          onChange={(e) => onChange(key, e.target.checked)}
-        />
+        <select
+          id={`prop-${prop.name}`}
+          value={value === UNSET ? UNSET : value ? 'true' : 'false'}
+          onChange={(e) => {
+            const v = e.target.value
+            if (v === UNSET) onChange(prop.name, UNSET)
+            else onChange(prop.name, v === 'true')
+          }}
+        >
+          {unsetOption}
+          <option value="true">true</option>
+          <option value="false">false</option>
+        </select>
       )
     case 'number':
-    case 'integer':
       return (
         <input
-          id={`prop-${key}`}
+          id={`prop-${prop.name}`}
           type="number"
-          value={Number(value ?? 0)}
-          onChange={(e) => onChange(key, Number(e.target.value))}
+          value={value === UNSET ? '' : (value as number) ?? 0}
+          placeholder={!prop.required ? 'Unset' : undefined}
+          onChange={(e) => {
+            if (e.target.value === '' && !prop.required) {
+              onChange(prop.name, UNSET)
+            } else {
+              onChange(prop.name, Number(e.target.value))
+            }
+          }}
         />
       )
     case 'string':
     default:
       return (
         <input
-          id={`prop-${key}`}
+          id={`prop-${prop.name}`}
           type="text"
-          value={String(value ?? '')}
-          onChange={(e) => onChange(key, e.target.value)}
+          value={value === UNSET ? '' : (value as string) ?? ''}
+          placeholder={!prop.required ? 'Unset' : undefined}
+          onChange={(e) => {
+            if (e.target.value === '' && !prop.required) {
+              onChange(prop.name, UNSET)
+            } else {
+              onChange(prop.name, e.target.value)
+            }
+          }}
         />
       )
   }

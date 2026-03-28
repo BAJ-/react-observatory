@@ -1,42 +1,34 @@
-import type { JSONSchema7 } from 'json-schema'
+import type { PropInfo } from './plugins/schemaPlugin'
 
-export function getRootSchema(schema: JSONSchema7): JSONSchema7 {
-  return schema.definitions
-    ? (Object.values(schema.definitions)[0] as JSONSchema7)
-    : schema
-}
+export const UNSET = '__unset__' as const
 
-export function generateProps(schema: JSONSchema7): Record<string, unknown> {
-  const root = getRootSchema(schema)
+export function generateProps(props: PropInfo[]): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
 
-  if (root.type !== 'object' || !root.properties) return {}
-
-  const props: Record<string, unknown> = {}
-
-  for (const [key, rawValue] of Object.entries(root.properties)) {
-    props[key] = generateValue(rawValue as JSONSchema7)
+  for (const prop of props) {
+    result[prop.name] = prop.required ? generateValue(prop) : UNSET
   }
 
-  return props
+  return result
 }
 
-function generateValue(schema: JSONSchema7): unknown {
-  if (schema.enum && schema.enum.length > 0) return schema.enum[0]
-  if (schema.const !== undefined) return schema.const
-
-  switch (schema.type) {
+function generateValue(prop: PropInfo): unknown {
+  switch (prop.type) {
     case 'string':
       return 'example'
     case 'number':
-    case 'integer':
       return 0
     case 'boolean':
       return false
+    case 'enum':
+      return prop.enumValues?.[0] ?? ''
+    case 'function':
+      return 'noop'
     case 'array':
       return []
     case 'object':
       return {}
     default:
-      return 'noop'
+      return ''
   }
 }

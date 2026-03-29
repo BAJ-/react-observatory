@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import type { PropInfo } from './plugins/schemaPlugin'
 import { generateProps } from './generateProps'
-import { resolveProps, type SerializableProps } from './resolveProps'
+import { type SerializableProps } from './resolveProps'
 import { PropsPanel } from './PropsPanel'
-import { ErrorBoundary } from './ErrorBoundary'
+import { ViewportControls } from './ViewportControls'
 import './App.css'
 
 function readPropsFromUrl(): SerializableProps {
@@ -22,40 +22,39 @@ function writePropsToUrl(props: SerializableProps) {
   window.history.replaceState(null, '', url.toString())
 }
 
+// Build the iframe URL once so prop edits don't reload it
+function useStableIframeSrc(
+  componentPath: string | null,
+  initialProps: SerializableProps,
+): string | null {
+  const [src] = useState(() => {
+    if (!componentPath) return null
+    const params = new URLSearchParams()
+    params.set('render', '')
+    params.set('component', componentPath)
+    params.set('props', JSON.stringify(initialProps))
+    return `/?${params.toString()}`
+  })
+  return src
+}
+
 function App() {
   const componentPath = new URLSearchParams(window.location.search).get(
     'component',
   )
 
-  const [Component, setComponent] = useState<React.ComponentType | null>(null)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
   const [propInfos, setPropInfos] = useState<PropInfo[]>([])
   const [serializableProps, setSerializableProps] =
     useState<SerializableProps>(readPropsFromUrl)
   const [error, setError] = useState<string | null>(null)
+  const [viewportWidth, setViewportWidth] = useState<number | null>(null)
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null)
 
   useEffect(() => {
     if (!componentPath) return
 
-    setComponent(null)
-    setPropInfos([])
-    setError(null)
-
-    const loadComponent = import(
-      /* @vite-ignore */ `../${componentPath.replace(/^src\//, '')}`
-    ).then((module) => {
-      const Comp =
-        module.default ??
-        Object.values(module).find((exp) => typeof exp === 'function')
-      if (Comp) {
-        setComponent(() => Comp as React.ComponentType)
-      } else {
-        setError('No component export found in module.')
-      }
-    })
-
-    const loadSchema = fetch(
-      `/api/schema?component=${encodeURIComponent(componentPath)}`,
-    )
+    fetch(`/api/schema?component=${encodeURIComponent(componentPath)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.props) {
@@ -68,11 +67,18 @@ function App() {
           }
         }
       })
-
-    Promise.all([loadComponent, loadSchema]).catch((err) => {
-      setError(err instanceof Error ? err.message : String(err))
-    })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : String(err))
+      })
   }, [componentPath])
+
+  // Send props to the iframe whenever they change
+  useEffect(() => {
+    iframeRef.current?.contentWindow?.postMessage(
+      { type: 'observatory:props', props: serializableProps },
+      window.location.origin,
+    )
+  }, [serializableProps])
 
   const handlePropChange = useCallback((key: string, value: unknown) => {
     setSerializableProps((prev) => {
@@ -82,10 +88,12 @@ function App() {
     })
   }, [])
 
-  const resolvedProps =
-    propInfos.length > 0
-      ? resolveProps(serializableProps, propInfos)
-      : serializableProps
+  const handleViewportChange = (w: number | null, h: number | null) => {
+    setViewportWidth(w)
+    setViewportHeight(h)
+  }
+
+  const iframeSrc = useStableIframeSrc(componentPath, serializableProps)
 
   if (!componentPath) {
     return (
@@ -97,7 +105,7 @@ function App() {
 
   return (
     <div className="observatory">
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="observatory-error">{error}</p>}
       <div className="observatory-layout">
         <aside className="observatory-panel">
           {propInfos.length > 0 ? (
@@ -111,13 +119,22 @@ function App() {
           )}
         </aside>
         <main className="observatory-preview">
-          {Component ? (
-            <ErrorBoundary key={JSON.stringify(serializableProps)}>
-              <Component {...resolvedProps} />
-            </ErrorBoundary>
-          ) : (
-            <p>Loading component...</p>
-          )}
+          <ViewportControls
+            width={viewportWidth}
+            height={viewportHeight}
+            onChange={handleViewportChange}
+          />
+          <div className="viewport-frame">
+            <iframe
+              ref={iframeRef}
+              src={iframeSrc ?? undefined}
+              title="Component preview"
+              style={{
+                width: viewportWidth ? `${viewportWidth}px` : '100%',
+                height: viewportHeight ? `${viewportHeight}px` : '100%',
+              }}
+            />
+          </div>
         </main>
       </div>
     </div>

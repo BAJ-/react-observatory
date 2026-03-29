@@ -1,24 +1,133 @@
 .observatory {
-  max-width: 100vw;
-  padding: 1rem;
+  --surface: #f5f6f8;
+  --surface-raised: #fff;
+  --control-bg: #8aa5c0;
+  --control-text: #fff;
+  --control-border: #c4cdd6;
+  --muted: #999;
+  --dim: #666;
+  --error: #e55;
+  --error-bg: rgba(255, 50, 50, 0.08);
+  --text-light: #ccc;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  padding: 1.25rem;
+  background: var(--surface);
+  min-height: 100vh;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .observatory-layout {
   display: flex;
-  gap: 1.5rem;
-  align-items: flex-start;
+  gap: 1.25rem;
+  align-items: stretch;
+  min-height: calc(100vh - 2.5rem);
 }
 
 .observatory-panel {
   width: 280px;
   flex-shrink: 0;
-  border-right: 1px solid #888;
-  padding-right: 1.5rem;
+  background: var(--surface-raised);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .observatory-preview {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.viewport-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-raised);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+
+.viewport-btn {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.viewport-btn.active {
+  background: var(--control-bg);
+  border-color: var(--control-bg);
+  color: var(--control-text);
+}
+
+.viewport-separator {
+  width: 1px;
+  height: 1.2rem;
+  background: var(--control-border);
+  margin: 0 0.25rem;
+}
+
+.viewport-size {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.viewport-size input {
+  width: 4rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  background: var(--control-bg);
+  color: var(--control-text);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.viewport-size input::placeholder {
+  color: var(--control-text);
+  opacity: 0.7;
+}
+
+.viewport-x {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.viewport-frame {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  overflow: auto;
+  min-height: 300px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.viewport-frame iframe {
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow-md);
+  flex-shrink: 0;
+  margin: 0 auto;
 }
 
 .props-panel h3 {
@@ -26,7 +135,7 @@
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: var(--muted);
 }
 
 .props-field {
@@ -39,46 +148,66 @@
 .props-field label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #999;
+  color: var(--muted);
+}
+
+.props-optional {
+  font-weight: 400;
 }
 
 .props-field input[type='text'],
 .props-field input[type='number'],
 .props-field select {
   padding: 0.35rem 0.5rem;
-  border: 1px solid #888;
-  border-radius: 4px;
-  background: #8aa5c0;
-  color: #fff;
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  background: var(--control-bg);
+  color: var(--control-text);
   font-size: 0.85rem;
 }
 
 .props-empty {
-  color: #666;
+  color: var(--dim);
+  font-size: 0.85rem;
+}
+
+.observatory-error {
+  color: var(--error);
   font-size: 0.85rem;
 }
 
 .error-boundary {
   padding: 1rem;
-  border: 1px solid #e55;
+  border: 1px solid var(--error);
   border-radius: 6px;
-  background: rgba(255, 50, 50, 0.08);
+  background: var(--error-bg);
 }
 
 .error-boundary h4 {
   margin: 0 0 0.5rem;
-  color: #e55;
+  color: var(--error);
 }
 
 .error-boundary pre {
   margin: 0 0 0.5rem;
   white-space: pre-wrap;
   font-size: 0.85rem;
-  color: #ccc;
+  color: var(--text-light);
 }
 
 .error-boundary p {
   margin: 0;
   font-size: 0.8rem;
-  color: #888;
+  color: var(--muted);
+}
+
+@media (max-width: 700px) {
+  .observatory-layout {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .observatory-panel {
+    width: auto;
+  }
 }

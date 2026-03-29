@@ -164,5 +164,10 @@ export function schemaPlugin(): Plugin {
         }
       })
     },
+    handleHotUpdate({ file, server }) {
+      if (/\.[tj]sx?$/.test(file)) {
+        server.hot.send('observatory:schema-update', { file })
+      }
+    },
   }
 }

@@ -72,6 +72,32 @@ function App() {
       })
   }, [componentPath])
 
+  // Re-fetch schema when component source changes via HMR
+  useEffect(() => {
+    if (!componentPath || !import.meta.hot) return
+
+    const path = componentPath
+    function refetchSchema() {
+      fetch(`/api/schema?component=${encodeURIComponent(path)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.props) {
+            setPropInfos(data.props)
+            // Generate defaults for any newly added props
+            setSerializableProps((prev) => {
+              const generated = generateProps(data.props)
+              const merged = { ...generated, ...prev }
+              writePropsToUrl(merged)
+              return merged
+            })
+          }
+        })
+    }
+
+    import.meta.hot.on('observatory:schema-update', refetchSchema)
+    return () => import.meta.hot!.off('observatory:schema-update', refetchSchema)
+  }, [componentPath])
+
   // Send props to the iframe whenever they change
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage(

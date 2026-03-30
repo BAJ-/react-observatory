@@ -16,6 +16,16 @@ const functionBehaviors: Record<
 
 export type SerializableProps = Record<string, unknown>
 
+export function readPropsFromUrl(): SerializableProps {
+  const raw = new URLSearchParams(window.location.search).get('props')
+  if (!raw) return {}
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return {}
+  }
+}
+
 export function resolveProps(
   serializable: SerializableProps,
   props: PropInfo[],

@@ -33,6 +33,7 @@
   border-radius: 10px;
   padding: 1rem 1.25rem;
   box-shadow: var(--shadow-sm);
+  overflow-y: auto;
 }
 
 .observatory-preview {
@@ -130,14 +131,6 @@
   margin: 0 auto;
 }
 
-.props-panel h3 {
-  margin: 0 0 0.75rem;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-}
-
 .props-field {
   display: flex;
   flex-direction: column;
@@ -199,6 +192,118 @@
   margin: 0;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+/* Timeline panel */
+
+.timeline-panel {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.timeline-header h3 {
+  margin: 0;
+}
+
+.timeline-replay-btn {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.timeline-replay-btn:hover {
+  background: var(--control-bg);
+  border-color: var(--control-bg);
+  color: var(--control-text);
+}
+
+.props-panel h3,
+.timeline-panel h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.timeline-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.timeline-node {
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  transition: background 0.1s;
+}
+
+.timeline-node:hover {
+  background: var(--surface);
+}
+
+.timeline-node.active {
+  background: var(--control-bg);
+}
+
+.timeline-indent {
+  flex-shrink: 0;
+}
+
+.timeline-mark {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--control-border);
+  background: transparent;
+  padding: 0;
+  margin: 0 0.35rem;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.timeline-mark.marked {
+  background: var(--control-bg);
+  border-color: var(--control-bg);
+}
+
+.timeline-node.active .timeline-mark {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.timeline-label {
+  flex: 1;
+  min-width: 0;
+  padding: 0.3rem 0.4rem;
+  border: none;
+  background: transparent;
+  color: var(--dim);
+  font-size: 0.78rem;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-node.active .timeline-label {
+  color: var(--control-text);
 }
 
 @media (max-width: 700px) {

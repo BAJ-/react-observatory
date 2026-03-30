@@ -1,6 +1,7 @@
 import ts from 'typescript'
 import { resolve } from 'node:path'
 import type { Plugin } from 'vite'
+import { API_SCHEMA, HMR_SCHEMA_UPDATE } from '../constants'
 
 export interface PropInfo {
   name: string
@@ -132,7 +133,7 @@ export function schemaPlugin(): Plugin {
   return {
     name: 'observatory-schema',
     configureServer(server) {
-      server.middlewares.use('/api/schema', (req, res) => {
+      server.middlewares.use(API_SCHEMA, (req, res) => {
         const url = new URL(req.url ?? '/', 'http://localhost')
         const componentPath = url.searchParams.get('component')
 
@@ -166,7 +167,7 @@ export function schemaPlugin(): Plugin {
     },
     handleHotUpdate({ file, server }) {
       if (/\.[tj]sx?$/.test(file)) {
-        server.hot.send('observatory:schema-update', { file })
+        server.hot.send(HMR_SCHEMA_UPDATE, { file })
       }
     },
   }

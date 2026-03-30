@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react'
 import type { PropInfo } from './plugins/schemaPlugin'
-import { resolveProps, type SerializableProps } from './resolveProps'
+import {
+  resolveProps,
+  type SerializableProps,
+  readPropsFromUrl,
+} from './resolveProps'
 import { ErrorBoundary } from './ErrorBoundary'
-
-function readPropsFromUrl(): SerializableProps {
-  const raw = new URLSearchParams(window.location.search).get('props')
-  if (!raw) return {}
-  try {
-    return JSON.parse(raw)
-  } catch {
-    return {}
-  }
-}
+import { MSG_PROPS, API_SCHEMA } from './constants'
 
 export function ComponentRenderer() {
   const params = new URLSearchParams(window.location.search)
@@ -41,7 +36,7 @@ export function ComponentRenderer() {
         setError(err instanceof Error ? err.message : String(err))
       })
 
-    fetch(`/api/schema?component=${encodeURIComponent(componentPath)}`)
+    fetch(`${API_SCHEMA}?component=${encodeURIComponent(componentPath)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.props) setPropInfos(data.props)
@@ -51,10 +46,7 @@ export function ComponentRenderer() {
   // Listen for prop updates from the parent window
   useEffect(() => {
     function handleMessage(e: MessageEvent) {
-      if (
-        e.origin === window.location.origin &&
-        e.data?.type === 'observatory:props'
-      ) {
+      if (e.origin === window.location.origin && e.data?.type === MSG_PROPS) {
         setSerializableProps(e.data.props)
       }
     }

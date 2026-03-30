@@ -1,20 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { PropInfo } from './plugins/schemaPlugin'
 import { generateProps } from './generateProps'
-import { type SerializableProps } from './resolveProps'
+import { type SerializableProps, readPropsFromUrl } from './resolveProps'
 import { PropsPanel } from './PropsPanel'
 import { ViewportControls } from './ViewportControls'
+import { TimelinePanel } from './TimelinePanel'
+import { useTimeline } from './useTimeline'
+import { MSG_PROPS, HMR_SCHEMA_UPDATE, API_SCHEMA } from './constants'
 import './App.css'
-
-function readPropsFromUrl(): SerializableProps {
-  const raw = new URLSearchParams(window.location.search).get('props')
-  if (!raw) return {}
-  try {
-    return JSON.parse(raw)
-  } catch {
-    return {}
-  }
-}
 
 function writePropsToUrl(props: SerializableProps) {
   const url = new URL(window.location.href)
@@ -22,20 +15,15 @@ function writePropsToUrl(props: SerializableProps) {
   window.history.replaceState(null, '', url.toString())
 }
 
-// Build the iframe URL once so prop edits don't reload it
-function useStableIframeSrc(
-  componentPath: string | null,
-  initialProps: SerializableProps,
-): string | null {
-  const [src] = useState(() => {
-    if (!componentPath) return null
-    const params = new URLSearchParams()
-    params.set('render', '')
-    params.set('component', componentPath)
-    params.set('props', JSON.stringify(initialProps))
-    return `/?${params.toString()}`
-  })
-  return src
+function buildIframeSrc(
+  componentPath: string,
+  props: SerializableProps,
+): string {
+  const params = new URLSearchParams()
+  params.set('render', '')
+  params.set('component', componentPath)
+  params.set('props', JSON.stringify(props))
+  return `/?${params.toString()}`
 }
 
 function App() {
@@ -45,8 +33,25 @@ function App() {
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [propInfos, setPropInfos] = useState<PropInfo[]>([])
-  const [serializableProps, setSerializableProps] =
-    useState<SerializableProps>(readPropsFromUrl)
+  const [urlProps] = useState(readPropsFromUrl)
+  const hasUrlProps = Object.keys(urlProps).length > 0
+  const {
+    timeline,
+    activeProps,
+    isReplaying,
+    handlePropChange,
+    goToNode,
+    toggleMarked,
+    initTimeline,
+    mergeActiveProps,
+    replay,
+    cancelReplay,
+  } = useTimeline(urlProps)
+  const [iframeSrc, setIframeSrc] = useState<string | null>(() =>
+    componentPath && hasUrlProps
+      ? buildIframeSrc(componentPath, urlProps)
+      : null,
+  )
   const [error, setError] = useState<string | null>(null)
   const [viewportWidth, setViewportWidth] = useState<number | null>(null)
   const [viewportHeight, setViewportHeight] = useState<number | null>(null)
@@ -54,23 +59,24 @@ function App() {
   useEffect(() => {
     if (!componentPath) return
 
-    fetch(`/api/schema?component=${encodeURIComponent(componentPath)}`)
+    fetch(`${API_SCHEMA}?component=${encodeURIComponent(componentPath)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.props) {
           setPropInfos(data.props)
-          const urlProps = readPropsFromUrl()
-          if (Object.keys(urlProps).length === 0) {
+          if (!hasUrlProps) {
             const generated = generateProps(data.props)
-            setSerializableProps(generated)
-            writePropsToUrl(generated)
+            initTimeline(generated)
+            setIframeSrc(
+              (prev) => prev ?? buildIframeSrc(componentPath!, generated),
+            )
           }
         }
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : String(err))
       })
-  }, [componentPath])
+  }, [componentPath, urlProps, hasUrlProps, initTimeline])
 
   // Re-fetch schema when component source changes via HMR
   useEffect(() => {
@@ -78,49 +84,34 @@ function App() {
 
     const path = componentPath
     function refetchSchema() {
-      fetch(`/api/schema?component=${encodeURIComponent(path)}`)
+      fetch(`${API_SCHEMA}?component=${encodeURIComponent(path)}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.props) {
             setPropInfos(data.props)
-            // Generate defaults for any newly added props
-            setSerializableProps((prev) => {
-              const generated = generateProps(data.props)
-              const merged = { ...generated, ...prev }
-              writePropsToUrl(merged)
-              return merged
-            })
+            mergeActiveProps(generateProps(data.props))
+            replay()
           }
         })
     }
 
-    import.meta.hot.on('observatory:schema-update', refetchSchema)
-    return () =>
-      import.meta.hot!.off('observatory:schema-update', refetchSchema)
-  }, [componentPath])
+    import.meta.hot.on(HMR_SCHEMA_UPDATE, refetchSchema)
+    return () => import.meta.hot!.off(HMR_SCHEMA_UPDATE, refetchSchema)
+  }, [componentPath, mergeActiveProps, replay])
 
   // Send props to the iframe whenever they change
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage(
-      { type: 'observatory:props', props: serializableProps },
+      { type: MSG_PROPS, props: activeProps },
       window.location.origin,
     )
-  }, [serializableProps])
-
-  const handlePropChange = useCallback((key: string, value: unknown) => {
-    setSerializableProps((prev) => {
-      const next = { ...prev, [key]: value }
-      writePropsToUrl(next)
-      return next
-    })
-  }, [])
+    writePropsToUrl(activeProps)
+  }, [activeProps])
 
   const handleViewportChange = (w: number | null, h: number | null) => {
     setViewportWidth(w)
     setViewportHeight(h)
   }
-
-  const iframeSrc = useStableIframeSrc(componentPath, serializableProps)
 
   if (!componentPath) {
     return (
@@ -138,11 +129,21 @@ function App() {
           {propInfos.length > 0 ? (
             <PropsPanel
               props={propInfos}
-              values={serializableProps}
+              values={activeProps}
               onChange={handlePropChange}
             />
           ) : (
             <p>Loading schema...</p>
+          )}
+          {timeline.nodes.length > 1 && (
+            <TimelinePanel
+              timeline={timeline}
+              isReplaying={isReplaying}
+              onGoToNode={goToNode}
+              onToggleMarked={toggleMarked}
+              onReplay={replay}
+              onCancelReplay={cancelReplay}
+            />
           )}
         </aside>
         <main className="observatory-preview">
@@ -156,6 +157,12 @@ function App() {
               ref={iframeRef}
               src={iframeSrc ?? undefined}
               title="Component preview"
+              onLoad={() => {
+                iframeRef.current?.contentWindow?.postMessage(
+                  { type: MSG_PROPS, props: activeProps },
+                  window.location.origin,
+                )
+              }}
               style={{
                 width: viewportWidth ? `${viewportWidth}px` : '100%',
                 height: viewportHeight ? `${viewportHeight}px` : '100%',

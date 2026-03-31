@@ -13,13 +13,13 @@ import {
 interface UseTimelineReturn {
   timeline: Timeline
   activeProps: SerializableProps
-  isReplaying: boolean
   handlePropChange: (key: string, value: unknown) => void
   goToNode: (id: string) => void
   toggleMarked: (id: string) => void
   initTimeline: (props: SerializableProps) => void
   mergeActiveProps: (baseProps: SerializableProps) => void
   replay: (stepMs?: number) => void
+  replaySequence: (nodeIds: string[], stepMs?: number) => void
   cancelReplay: () => void
 }
 
@@ -29,7 +29,6 @@ export function useTimeline(
   const [timeline, setTimeline] = useState<Timeline>(() =>
     createTimeline(initialProps),
   )
-  const [isReplaying, setIsReplaying] = useState(false)
   const replayTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const timelineRef = useRef(timeline)
 
@@ -49,7 +48,6 @@ export function useTimeline(
   const cancelReplay = useCallback(() => {
     for (const t of replayTimersRef.current) clearTimeout(t)
     replayTimersRef.current = []
-    setIsReplaying(false)
   }, [])
 
   const handlePropChange = useCallback(
@@ -94,50 +92,52 @@ export function useTimeline(
     }))
   }, [])
 
-  const replay = useCallback((stepMs = 600) => {
-    const sequence = getMarkedSequence(timelineRef.current)
-    if (sequence.length === 0) return
+  const replaySequence = useCallback(
+    (nodeIds: string[], stepMs = 600) => {
+      if (nodeIds.length === 0) return
 
-    // Cancel any in-progress replay
-    for (const t of replayTimersRef.current) clearTimeout(t)
-    replayTimersRef.current = []
+      cancelReplay()
 
-    setIsReplaying(true)
+      setTimeline((prev) => goToTimelineNode(prev, nodeIds[0]))
 
-    // Navigate to first marked node immediately
-    setTimeline((prev) => goToTimelineNode(prev, sequence[0].id))
+      const remaining = nodeIds.slice(1)
+      remaining.forEach((nodeId, i) => {
+        const timer = setTimeout(
+          () => {
+            setTimeline((prev) => goToTimelineNode(prev, nodeId))
+            if (i === remaining.length - 1) {
+              replayTimersRef.current = []
+            }
+          },
+          stepMs * (i + 1),
+        )
+        replayTimersRef.current.push(timer)
+      })
+    },
+    [cancelReplay],
+  )
 
-    // Schedule remaining steps
-    const remaining = sequence.slice(1)
-    remaining.forEach((node, i) => {
-      const timer = setTimeout(
-        () => {
-          setTimeline((prev) => goToTimelineNode(prev, node.id))
-          if (i === remaining.length - 1) {
-            replayTimersRef.current = []
-            setIsReplaying(false)
-          }
-        },
-        stepMs * (i + 1),
+  const replay = useCallback(
+    (stepMs = 600) => {
+      const sequence = getMarkedSequence(timelineRef.current)
+      replaySequence(
+        sequence.map((n) => n.id),
+        stepMs,
       )
-      replayTimersRef.current.push(timer)
-    })
-
-    if (remaining.length === 0) {
-      setIsReplaying(false)
-    }
-  }, [])
+    },
+    [replaySequence],
+  )
 
   return {
     timeline,
     activeProps,
-    isReplaying,
     handlePropChange,
     goToNode,
     toggleMarked,
     initTimeline,
     mergeActiveProps,
     replay,
+    replaySequence,
     cancelReplay,
   }
 }

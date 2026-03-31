@@ -1,4 +1,27 @@
 import type { SerializableProps } from './resolveProps'
+import { UNSET } from './generateProps'
+
+export function getNodeLabel(
+  node: TimelineNode,
+  parent: TimelineNode | null,
+): string {
+  if (!parent) return 'initial'
+
+  const changed: string[] = []
+  for (const [key, value] of Object.entries(node.props)) {
+    if (parent.props[key] !== value) {
+      const formatted =
+        value === UNSET
+          ? 'unset'
+          : typeof value === 'string'
+            ? `'${value}'`
+            : String(value)
+      changed.push(`${key}: ${formatted}`)
+    }
+  }
+
+  return changed.length > 0 ? changed.join(', ') : 'no change'
+}
 
 export interface TimelineNode {
   id: string
@@ -12,19 +35,8 @@ export interface Timeline {
   activeId: string
 }
 
-let nextId = 0
-
-function generateId(): string {
-  return String(++nextId)
-}
-
-/** Reset the ID counter — only for tests. */
-export function resetIdCounter(): void {
-  nextId = 0
-}
-
 export function createTimeline(initialProps: SerializableProps): Timeline {
-  const id = generateId()
+  const id = crypto.randomUUID()
   return {
     nodes: [{ id, parentId: null, props: initialProps }],
     activeId: id,
@@ -35,7 +47,7 @@ export function addNode(
   timeline: Timeline,
   props: SerializableProps,
 ): Timeline {
-  const id = generateId()
+  const id = crypto.randomUUID()
   const node: TimelineNode = {
     id,
     parentId: timeline.activeId,

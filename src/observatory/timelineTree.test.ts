@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import {
   createTimeline,
   addNode,
@@ -6,12 +6,7 @@ import {
   getChildren,
   toggleMarked,
   getMarkedSequence,
-  resetIdCounter,
 } from './timelineTree'
-
-beforeEach(() => {
-  resetIdCounter()
-})
 
 describe('createTimeline', () => {
   it('creates a timeline with one root node', () => {
@@ -73,18 +68,13 @@ describe('goToNode', () => {
 })
 
 describe('toggleMarked', () => {
-  it('marks an unmarked node', () => {
+  it('toggles marked state', () => {
     const tl = createTimeline({ v: 1 })
-    const toggled = toggleMarked(tl, tl.activeId)
+    const marked = toggleMarked(tl, tl.activeId)
+    expect(marked.nodes[0].marked).toBe(true)
 
-    expect(toggled.nodes[0].marked).toBe(true)
-  })
-
-  it('unmarks a marked node', () => {
-    const tl = createTimeline({ v: 1 })
-    const toggled = toggleMarked(toggleMarked(tl, tl.activeId), tl.activeId)
-
-    expect(toggled.nodes[0].marked).toBe(false)
+    const unmarked = toggleMarked(marked, tl.activeId)
+    expect(unmarked.nodes[0].marked).toBe(false)
   })
 
   it('does not mutate the original timeline', () => {

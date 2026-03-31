@@ -1,23 +1,21 @@
 import type { Timeline, TimelineNode } from './timelineTree'
-import { getChildren } from './timelineTree'
-import { UNSET } from './generateProps'
+import { getChildren, getNodeLabel } from './timelineTree'
+import { Save } from 'react-feather'
 
 interface TimelinePanelProps {
   timeline: Timeline
-  isReplaying: boolean
   onGoToNode: (id: string) => void
   onToggleMarked: (id: string) => void
   onReplay: () => void
-  onCancelReplay: () => void
+  onSaveScenario: () => void
 }
 
 export function TimelinePanel({
   timeline,
-  isReplaying,
   onGoToNode,
   onToggleMarked,
   onReplay,
-  onCancelReplay,
+  onSaveScenario,
 }: TimelinePanelProps) {
   const root = timeline.nodes.find((n) => n.parentId === null)
   if (!root) return null
@@ -29,12 +27,18 @@ export function TimelinePanel({
       <div className="timeline-header">
         <h3>Timeline</h3>
         {hasMarked && (
-          <button
-            className="timeline-replay-btn"
-            onClick={isReplaying ? onCancelReplay : onReplay}
-          >
-            {isReplaying ? 'Stop' : 'Replay'}
-          </button>
+          <div className="timeline-actions">
+            <button className="timeline-replay-btn" onClick={() => onReplay()}>
+              Replay
+            </button>
+            <button
+              className="timeline-save-btn"
+              onClick={onSaveScenario}
+              title="Save marked nodes as scenario"
+            >
+              <Save size={14} />
+            </button>
+          </div>
         )}
       </div>
       <div className="timeline-tree">
@@ -65,7 +69,10 @@ function NodeRow({
 }) {
   const children = getChildren(timeline, node.id)
   const isActive = node.id === timeline.activeId
-  const label = getChangeLabel(node, timeline)
+  const parent = node.parentId
+    ? (timeline.nodes.find((n) => n.id === node.parentId) ?? null)
+    : null
+  const label = getNodeLabel(node, parent)
 
   return (
     <>
@@ -95,27 +102,4 @@ function NodeRow({
       ))}
     </>
   )
-}
-
-function getChangeLabel(node: TimelineNode, timeline: Timeline): string {
-  if (!node.parentId) return 'initial'
-  const parent = timeline.nodes.find((n) => n.id === node.parentId)
-  if (!parent) return 'initial'
-
-  const changed: string[] = []
-  for (const [key, value] of Object.entries(node.props)) {
-    if (parent.props[key] !== value) {
-      changed.push(`${key}: ${formatValue(value)}`)
-    }
-  }
-
-  return changed.length > 0 ? changed.join(', ') : 'no change'
-}
-
-function formatValue(value: unknown): string {
-  if (value === UNSET) return 'unset'
-  if (typeof value === 'string') {
-    return value.length > 20 ? `'${value.slice(0, 20)}…'` : `'${value}'`
-  }
-  return String(value)
 }

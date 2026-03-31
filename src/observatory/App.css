@@ -306,6 +306,236 @@
   color: var(--control-text);
 }
 
+/* Timeline actions (replay + save) */
+
+.timeline-actions {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.timeline-save-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem;
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.timeline-save-btn:hover {
+  background: var(--control-bg);
+  border-color: var(--control-bg);
+  color: var(--control-text);
+}
+
+/* Scenario panel */
+
+.scenario-panel {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+}
+
+.scenario-panel h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.scenario-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scenario-item {
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.scenario-header {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 6px;
+}
+
+.scenario-header:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.scenario-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.scenario-name {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--dim);
+  font-size: 0.78rem;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scenario-name:hover {
+  color: var(--control-bg);
+}
+
+.scenario-name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.1rem 0.25rem;
+  border: 1px solid var(--control-border);
+  border-radius: 4px;
+  background: var(--surface-raised);
+  color: var(--dim);
+  font-size: 0.78rem;
+  outline: none;
+}
+
+.scenario-name-input:focus {
+  border-color: var(--control-bg);
+}
+
+.scenario-step-count {
+  font-size: 0.7rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.scenario-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 4px;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.scenario-delete-btn:hover {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.scenario-body {
+  padding: 0.4rem 0.6rem 0.5rem;
+}
+
+.scenario-controls {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.scenario-control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--control-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.scenario-control-btn:hover:not(:disabled) {
+  background: var(--control-bg);
+  border-color: var(--control-bg);
+  color: var(--control-text);
+}
+
+.scenario-control-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.scenario-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.scenario-step {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.3rem;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.scenario-step:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.scenario-step.active {
+  background: var(--control-bg);
+}
+
+.scenario-step-index {
+  font-size: 0.65rem;
+  color: var(--muted);
+  width: 1.2em;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.scenario-step.active .scenario-step-index {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.scenario-step-label {
+  font-size: 0.75rem;
+  color: var(--dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scenario-step.active .scenario-step-label {
+  color: var(--control-text);
+}
+
 @media (max-width: 700px) {
   .observatory-layout {
     flex-direction: column;

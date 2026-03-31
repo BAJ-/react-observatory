@@ -2,10 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import type { PropInfo } from './plugins/schemaPlugin'
 import { generateProps } from './generateProps'
 import { type SerializableProps, readPropsFromUrl } from './resolveProps'
+import { getMarkedSequence } from './timelineTree'
 import { PropsPanel } from './PropsPanel'
 import { ViewportControls } from './ViewportControls'
 import { TimelinePanel } from './TimelinePanel'
+import { ScenarioPanel } from './ScenarioPanel'
 import { useTimeline } from './useTimeline'
+import { useScenarios } from './useScenarios'
 import { MSG_PROPS, HMR_SCHEMA_UPDATE, API_SCHEMA } from './constants'
 import './App.css'
 
@@ -38,15 +41,23 @@ function App() {
   const {
     timeline,
     activeProps,
-    isReplaying,
     handlePropChange,
     goToNode,
     toggleMarked,
     initTimeline,
     mergeActiveProps,
     replay,
+    replaySequence,
     cancelReplay,
   } = useTimeline(urlProps)
+  const {
+    scenarios,
+    playingScenarioId,
+    addScenario,
+    renameScenario,
+    deleteScenario,
+    selectScenario,
+  } = useScenarios()
   const [iframeSrc, setIframeSrc] = useState<string | null>(() =>
     componentPath && hasUrlProps
       ? buildIframeSrc(componentPath, urlProps)
@@ -108,6 +119,41 @@ function App() {
     writePropsToUrl(activeProps)
   }, [activeProps])
 
+  const handleSaveScenario = () => {
+    const steps = getMarkedSequence(timeline)
+    if (steps.length === 0) return
+    addScenario(`Scenario ${scenarios.length + 1}`, steps)
+  }
+
+  const playScenario = (id: string) => {
+    selectScenario(id)
+    const scenario = scenarios.find((s) => s.id === id)
+    if (scenario) {
+      replaySequence(scenario.steps.map((s) => s.id))
+    }
+  }
+
+  const stepToScenario = (id: string, stepIndex: number) => {
+    selectScenario(id)
+    const scenario = scenarios.find((s) => s.id === id)
+    if (scenario) goToNode(scenario.steps[stepIndex].id)
+  }
+
+  const handleDeleteScenario = (id: string) => {
+    if (playingScenarioId === id) cancelReplay()
+    deleteScenario(id)
+  }
+
+  const playingScenario = playingScenarioId
+    ? scenarios.find((s) => s.id === playingScenarioId)
+    : undefined
+  const playingStepIndex =
+    playingScenario?.steps.findIndex((s) => s.id === timeline.activeId) ?? -1
+  const scenarioPlayback =
+    playingScenarioId && playingStepIndex >= 0
+      ? { scenarioId: playingScenarioId, stepIndex: playingStepIndex }
+      : null
+
   const handleViewportChange = (w: number | null, h: number | null) => {
     setViewportWidth(w)
     setViewportHeight(h)
@@ -138,13 +184,20 @@ function App() {
           {timeline.nodes.length > 1 && (
             <TimelinePanel
               timeline={timeline}
-              isReplaying={isReplaying}
               onGoToNode={goToNode}
               onToggleMarked={toggleMarked}
               onReplay={replay}
-              onCancelReplay={cancelReplay}
+              onSaveScenario={handleSaveScenario}
             />
           )}
+          <ScenarioPanel
+            scenarios={scenarios}
+            playback={scenarioPlayback}
+            onPlay={playScenario}
+            onStepTo={stepToScenario}
+            onRename={renameScenario}
+            onDelete={handleDeleteScenario}
+          />
         </aside>
         <main className="observatory-preview">
           <ViewportControls

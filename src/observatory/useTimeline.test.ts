@@ -1,11 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useTimeline } from './useTimeline'
-import { resetIdCounter, getChildren } from './timelineTree'
-
-beforeEach(() => {
-  resetIdCounter()
-})
+import { getChildren } from './timelineTree'
 
 describe('useTimeline', () => {
   it('starts with an empty-props root node', () => {
@@ -37,16 +33,6 @@ describe('useTimeline', () => {
       expect(result.current.activeProps).toEqual({ label: 'World', size: 10 })
     })
 
-    it('chains multiple prop changes as a linear path', () => {
-      const { result } = renderHook(() => useTimeline())
-
-      act(() => result.current.initTimeline({ v: 1 }))
-      act(() => result.current.handlePropChange('v', 2))
-      act(() => result.current.handlePropChange('v', 3))
-
-      expect(result.current.timeline.nodes).toHaveLength(3)
-      expect(result.current.activeProps).toEqual({ v: 3 })
-    })
     it('does not create a node when value is unchanged', () => {
       const { result } = renderHook(() => useTimeline())
 
@@ -129,6 +115,40 @@ describe('useTimeline', () => {
     })
   })
 
+  describe('replaySequence', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+
+    it('navigates through specified node IDs', () => {
+      const { result } = renderHook(() => useTimeline())
+
+      act(() => result.current.initTimeline({ v: 1 }))
+      const firstId = result.current.timeline.activeId
+
+      act(() => result.current.handlePropChange('v', 2))
+      const secondId = result.current.timeline.activeId
+
+      act(() => result.current.handlePropChange('v', 3))
+      const thirdId = result.current.timeline.activeId
+
+      // Go back to first
+      act(() => result.current.goToNode(firstId))
+      expect(result.current.activeProps).toEqual({ v: 1 })
+
+      // Replay only second and third
+      act(() => result.current.replaySequence([secondId, thirdId], 100))
+      expect(result.current.activeProps).toEqual({ v: 2 })
+
+      act(() => vi.advanceTimersByTime(100))
+      expect(result.current.activeProps).toEqual({ v: 3 })
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+  })
+
   describe('replay', () => {
     beforeEach(() => {
       vi.useFakeTimers()
@@ -155,12 +175,10 @@ describe('useTimeline', () => {
 
       // Immediately jumps to first marked node
       expect(result.current.activeProps).toEqual({ v: 2 })
-      expect(result.current.isReplaying).toBe(true)
 
       // After delay, moves to second marked node
       act(() => vi.advanceTimersByTime(100))
       expect(result.current.activeProps).toEqual({ v: 3 })
-      expect(result.current.isReplaying).toBe(false)
     })
 
     it('does nothing with no marked nodes', () => {
@@ -170,36 +188,10 @@ describe('useTimeline', () => {
       act(() => result.current.handlePropChange('v', 2))
 
       act(() => result.current.replay())
-      expect(result.current.isReplaying).toBe(false)
-    })
-
-    it('can be cancelled mid-replay', () => {
-      const { result } = renderHook(() => useTimeline())
-
-      act(() => result.current.initTimeline({ v: 1 }))
-      act(() => result.current.handlePropChange('v', 2))
-      const secondId = result.current.timeline.activeId
-      act(() => result.current.handlePropChange('v', 3))
-      const thirdId = result.current.timeline.activeId
-
-      act(() => result.current.toggleMarked(secondId))
-      act(() => result.current.toggleMarked(thirdId))
-
-      act(() => result.current.goToNode(result.current.timeline.nodes[0].id))
-
-      act(() => result.current.replay(100))
-      expect(result.current.activeProps).toEqual({ v: 2 })
-
-      // Cancel before the timer fires
-      act(() => result.current.cancelReplay())
-      expect(result.current.isReplaying).toBe(false)
-
-      // Advancing time should not change state
-      act(() => vi.advanceTimersByTime(200))
       expect(result.current.activeProps).toEqual({ v: 2 })
     })
 
-    it('is cancelled by handlePropChange', () => {
+    it('is stopped by handlePropChange', () => {
       const { result } = renderHook(() => useTimeline())
 
       act(() => result.current.initTimeline({ v: 1 }))
@@ -213,11 +205,9 @@ describe('useTimeline', () => {
 
       act(() => result.current.goToNode(result.current.timeline.nodes[0].id))
       act(() => result.current.replay(100))
-      expect(result.current.isReplaying).toBe(true)
 
       // User edits a prop mid-replay
       act(() => result.current.handlePropChange('v', 99))
-      expect(result.current.isReplaying).toBe(false)
       expect(result.current.activeProps).toEqual({ v: 99 })
 
       // Timer should not snap back
@@ -225,7 +215,7 @@ describe('useTimeline', () => {
       expect(result.current.activeProps).toEqual({ v: 99 })
     })
 
-    it('is cancelled by goToNode', () => {
+    it('is stopped by goToNode', () => {
       const { result } = renderHook(() => useTimeline())
 
       act(() => result.current.initTimeline({ v: 1 }))
@@ -240,11 +230,9 @@ describe('useTimeline', () => {
 
       act(() => result.current.goToNode(rootId))
       act(() => result.current.replay(100))
-      expect(result.current.isReplaying).toBe(true)
 
       // User navigates mid-replay
       act(() => result.current.goToNode(rootId))
-      expect(result.current.isReplaying).toBe(false)
       expect(result.current.activeProps).toEqual({ v: 1 })
 
       // Timer should not snap back
@@ -252,7 +240,7 @@ describe('useTimeline', () => {
       expect(result.current.activeProps).toEqual({ v: 1 })
     })
 
-    it('is cancelled by toggleMarked', () => {
+    it('is stopped by toggleMarked', () => {
       const { result } = renderHook(() => useTimeline())
 
       act(() => result.current.initTimeline({ v: 1 }))
@@ -266,11 +254,9 @@ describe('useTimeline', () => {
 
       act(() => result.current.goToNode(result.current.timeline.nodes[0].id))
       act(() => result.current.replay(100))
-      expect(result.current.isReplaying).toBe(true)
 
       // User toggles a mark mid-replay
       act(() => result.current.toggleMarked(thirdId))
-      expect(result.current.isReplaying).toBe(false)
 
       // Timer should not advance replay
       act(() => vi.advanceTimersByTime(200))

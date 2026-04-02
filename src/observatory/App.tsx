@@ -9,28 +9,20 @@ import { TimelinePanel } from './TimelinePanel'
 import { ScenarioPanel } from './ScenarioPanel'
 import { PdiffModal } from './PdiffModal'
 import { StressModal } from './StressModal'
+import { VariantCard } from './VariantCard'
 import { useTimeline } from './useTimeline'
 import { useScenarios } from './useScenarios'
 import { usePdiff } from './usePdiff'
 import { useStress } from './useStress'
+import { usePinnedVariants } from './usePinnedVariants'
 import { MSG_PROPS, HMR_SCHEMA_UPDATE, API_SCHEMA } from './constants'
+import { buildIframeSrc } from './buildIframeSrc'
 import './App.css'
 
 function writePropsToUrl(props: SerializableProps) {
   const url = new URL(window.location.href)
   url.searchParams.set('props', JSON.stringify(props))
   window.history.replaceState(null, '', url.toString())
-}
-
-function buildIframeSrc(
-  componentPath: string,
-  props: SerializableProps,
-): string {
-  const params = new URLSearchParams()
-  params.set('render', '')
-  params.set('component', componentPath)
-  params.set('props', JSON.stringify(props))
-  return `/?${params.toString()}`
 }
 
 function App() {
@@ -64,6 +56,8 @@ function App() {
   } = useScenarios()
   const { pdiffRun, runPdiff, clearPdiff } = usePdiff()
   const { stressRun, runStress, clearStress } = useStress()
+  const { variants, pinVariant, unpinVariant } =
+    usePinnedVariants(componentPath)
   const [iframeSrc, setIframeSrc] = useState<string | null>(() =>
     componentPath && hasUrlProps
       ? buildIframeSrc(componentPath, urlProps)
@@ -171,6 +165,10 @@ function App() {
     }
   }
 
+  const handlePinVariant = () => {
+    pinVariant(activeProps)
+  }
+
   const playingScenario = playingScenarioId
     ? scenarios.find((s) => s.id === playingScenarioId)
     : undefined
@@ -233,6 +231,7 @@ function App() {
             width={viewportWidth}
             height={viewportHeight}
             onChange={handleViewportChange}
+            onPinVariant={handlePinVariant}
             onHealthCheck={handleRunStress}
             healthCheckRunning={stressRun?.running}
           />
@@ -253,6 +252,18 @@ function App() {
               }}
             />
           </div>
+          {variants.length > 0 && (
+            <div className="variant-grid">
+              {variants.map((v) => (
+                <VariantCard
+                  key={v.id}
+                  variant={v}
+                  componentPath={componentPath}
+                  onUnpin={unpinVariant}
+                />
+              ))}
+            </div>
+          )}
         </main>
       </div>
       {pdiffRun && (

@@ -1,4 +1,4 @@
-import { Activity } from 'react-feather'
+import { Activity, Copy } from 'react-feather'
 
 interface Viewport {
   label: string
@@ -17,6 +17,7 @@ interface ViewportControlsProps {
   width: number | null
   height: number | null
   onChange: (width: number | null, height: number | null) => void
+  onPinVariant?: () => void
   onHealthCheck?: () => void
   healthCheckRunning?: boolean
 }
@@ -25,6 +26,7 @@ export function ViewportControls({
   width,
   height,
   onChange,
+  onPinVariant,
   onHealthCheck,
   healthCheckRunning,
 }: ViewportControlsProps) {
@@ -73,6 +75,14 @@ export function ViewportControls({
           }
         />
       </label>
+      {onPinVariant && (
+        <>
+          <span className="viewport-separator" />
+          <button className="viewport-btn" onClick={onPinVariant}>
+            <Copy size={14} /> Pin
+          </button>
+        </>
+      )}
       {onHealthCheck && (
         <>
           <span className="viewport-separator" />

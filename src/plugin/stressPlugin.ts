@@ -1,11 +1,15 @@
-import { resolve, relative } from 'node:path'
+import { resolve, relative, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { existsSync } from 'node:fs'
 import type { Plugin, ViteDevServer } from 'vite'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { API_STRESS } from '../constants'
-import { computeStats } from '../stressStats'
-import type { StressResult } from '../analyzeHealth'
+import { API_STRESS } from '../shared/constants'
+import { computeStats } from '../shared/stressStats'
+import type { StressResult } from '../shared/analyzeHealth'
 import { extractProps } from './schemaPlugin'
-import { hydrateProps } from '../hydrateProps'
+import { hydrateProps } from './hydrateProps'
+import { findTsconfig } from './findTsconfig'
+import type { RootRef } from './index'
 
 interface StressRequest {
   component: string
@@ -51,6 +55,7 @@ async function handleStress(
   req: IncomingMessage,
   res: ServerResponse,
   server: ViteDevServer,
+  rootRef: RootRef,
 ): Promise<void> {
   if (req.method !== 'POST') {
     res.writeHead(405, { 'Content-Type': 'application/json' })
@@ -101,8 +106,8 @@ async function handleStress(
     return
   }
 
-  const absPath = resolve(process.cwd(), component)
-  const rel = relative(process.cwd(), absPath)
+  const absPath = resolve(rootRef.root, component)
+  const rel = relative(rootRef.root, absPath)
   if (rel.startsWith('..')) {
     res.writeHead(403, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({ error: 'Path outside project root' }))
@@ -122,12 +127,19 @@ async function handleStress(
 
     // Load the rendering helper via SSR so React is resolved through
     // Vite's normal externalization (avoids CJS/ESM mismatch).
-    const { render } = (await server.ssrLoadModule(
-      '/src/observatory/stressRender.ts',
-    )) as { render: (comp: unknown, props: Record<string, unknown>) => string }
+    const selfDir = dirname(fileURLToPath(import.meta.url))
+    // In dev: selfDir is src/plugin/, stressRender.ts is a sibling.
+    // As npm package: selfDir is dist/, stressRender.mjs is a sibling.
+    const localPath = resolve(selfDir, 'stressRender.ts')
+    const stressRenderPath = existsSync(localPath)
+      ? localPath
+      : resolve(selfDir, 'stressRender.mjs')
+    const { render } = (await server.ssrLoadModule(stressRenderPath)) as {
+      render: (comp: unknown, props: Record<string, unknown>) => string
+    }
 
     // Hydrate function props so the component receives callable stubs
-    const tsconfigPath = resolve(process.cwd(), 'tsconfig.app.json')
+    const tsconfigPath = findTsconfig(rootRef.root)
     const propInfos = extractProps(absPath, tsconfigPath)
     const hydratedProps = hydrateProps(props, propInfos)
 
@@ -212,12 +224,12 @@ async function handleStress(
   }
 }
 
-export function stressPlugin(): Plugin {
+export function stressPlugin(rootRef: RootRef): Plugin {
   return {
     name: 'observatory-stress',
     configureServer(server) {
       server.middlewares.use(API_STRESS, (req, res) => {
-        handleStress(req, res, server).catch((err) => {
+        handleStress(req, res, server, rootRef).catch((err) => {
           if (!res.headersSent) {
             res.writeHead(500, { 'Content-Type': 'application/json' })
             res.end(JSON.stringify({ error: String(err) }))

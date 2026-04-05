@@ -8,5 +8,5 @@ export function buildIframeSrc(
   params.set('render', '')
   params.set('component', componentPath)
   params.set('props', JSON.stringify(props))
-  return `/?${params.toString()}`
+  return `/__observatory?${params.toString()}`
 }

@@ -1,11 +1,48 @@
 {
-  "name": "react-observatory",
-  "private": true,
-  "version": "0.0.0",
+  "name": "reactoscope",
+  "version": "0.1.0",
   "type": "module",
+  "description": "Explore, stress-test, and get AI feedback on your React components",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BAJ-/react-observatory.git"
+  },
+  "license": "MIT",
+  "bin": {
+    "reactoscope": "./bin/observe.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/plugin.mjs",
+      "types": "./dist/plugin.d.mts"
+    }
+  },
+  "files": [
+    "dist/",
+    "bin/"
+  ],
+  "keywords": [
+    "react",
+    "component",
+    "devtools",
+    "vite-plugin",
+    "stress-test",
+    "reactoscope"
+  ],
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run build:plugin && npm run build:ui && npm run build:render",
+    "build:plugin": "tsdown",
+    "build:ui": "vite build --config vite.config.ui.ts",
+    "build:render": "vite build --config vite.config.render.ts",
+    "prepack": "npm run build",
     "typecheck": "tsc -b --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
@@ -15,10 +52,13 @@
     "observe": "node bin/observe.js"
   },
   "dependencies": {
-    "html2canvas-pro": "^2.0.2",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-feather": "^2.0.10"
+    "@vitejs/plugin-react": "^6.0.0",
+    "vite": "^8.0.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": ">=5.8.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -27,16 +67,17 @@
     "@types/node": "^24.12.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
+    "html2canvas-pro": "^2.0.2",
     "jsdom": "^29.0.1",
     "prettier": "^3.8.1",
+    "react-feather": "^2.0.10",
+    "tsdown": "^0.21.7",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
-    "vite": "^8.0.1",
     "vitest": "^4.1.2"
   }
 }

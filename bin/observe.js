@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
 import { createServer } from 'vite'
 import react from '@vitejs/plugin-react'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 const componentPath = process.argv[2]
 
@@ -50,9 +49,9 @@ function hasReactPlugin(plugins) {
   })
 }
 
-// Build the plugin list — always include observatory + tsconfigPaths,
+// Build the plugin list — always include observatory,
 // only add react() if the user's config doesn't already provide one.
-const extraPlugins = [...observatory(), tsconfigPaths()]
+const extraPlugins = [...observatory()]
 
 const server = await createServer({
   root: cwd,
@@ -68,6 +67,9 @@ const server = await createServer({
     },
     ...extraPlugins,
   ],
+  resolve: {
+    tsconfigPaths: true,
+  },
   server: {
     open: `/__observatory?component=${encodeURIComponent(rel)}`,
   },

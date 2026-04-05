@@ -19,7 +19,8 @@
   },
   "files": [
     "dist/",
-    "bin/"
+    "bin/",
+    "src/plugin/stressRender.ts"
   ],
   "keywords": [
     "vite-plugin",
@@ -37,9 +38,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:plugin && npm run build:ui",
+    "build": "npm run build:plugin && npm run build:ui && npm run build:render",
     "build:plugin": "tsdown",
     "build:ui": "vite build --config vite.config.ui.ts",
+    "build:render": "vite build --config vite.config.render.ts",
     "prepare": "npm run build",
     "prepack": "npm run build",
     "typecheck": "tsc -b --noEmit",
@@ -52,8 +54,7 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.0.0",
-    "vite": "^8.0.0",
-    "vite-tsconfig-paths": "^5.0.0"
+    "vite": "^8.0.0"
   },
   "peerDependencies": {
     "react": "^19.0.0",

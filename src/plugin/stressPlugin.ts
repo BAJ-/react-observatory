@@ -1,4 +1,6 @@
-import { resolve, relative } from 'node:path'
+import { resolve, relative, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { existsSync } from 'node:fs'
 import type { Plugin, ViteDevServer } from 'vite'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { API_STRESS } from '../shared/constants'
@@ -125,9 +127,16 @@ async function handleStress(
 
     // Load the rendering helper via SSR so React is resolved through
     // Vite's normal externalization (avoids CJS/ESM mismatch).
-    const { render } = (await server.ssrLoadModule(
-      '/src/plugin/stressRender.ts',
-    )) as { render: (comp: unknown, props: Record<string, unknown>) => string }
+    const selfDir = dirname(fileURLToPath(import.meta.url))
+    // In dev: selfDir is src/plugin/, stressRender.ts is a sibling.
+    // As npm package: selfDir is dist/, stressRender.ts is at ../src/plugin/.
+    const localPath = resolve(selfDir, 'stressRender.ts')
+    const stressRenderPath = existsSync(localPath)
+      ? localPath
+      : resolve(selfDir, '..', 'src', 'plugin', 'stressRender.ts')
+    const { render } = (await server.ssrLoadModule(stressRenderPath)) as {
+      render: (comp: unknown, props: Record<string, unknown>) => string
+    }
 
     // Hydrate function props so the component receives callable stubs
     const tsconfigPath = findTsconfig(rootRef.root)

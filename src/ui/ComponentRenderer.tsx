@@ -26,7 +26,7 @@ export function ComponentRenderer() {
   useEffect(() => {
     if (!componentPath) return
 
-    import(/* @vite-ignore */ `../${componentPath.replace(/^src\//, '')}`)
+    import(/* @vite-ignore */ `/${componentPath}`)
       .then((module) => {
         const Comp =
           module.default ??

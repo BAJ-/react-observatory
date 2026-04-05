@@ -46,8 +46,8 @@ observatory({
 })
 ```
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| Option      | Type     | Default                  | Description                                               |
+| ----------- | -------- | ------------------------ | --------------------------------------------------------- |
 | `ollamaUrl` | `string` | `http://localhost:11434` | Base URL for the Ollama API used by the AI feedback panel |
 
 ## Requirements

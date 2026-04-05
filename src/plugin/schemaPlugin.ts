@@ -1,5 +1,5 @@
 import ts from 'typescript'
-import { resolve } from 'node:path'
+import { resolve, relative } from 'node:path'
 import type { Plugin } from 'vite'
 import { API_SCHEMA, HMR_SCHEMA_UPDATE } from '../shared/constants'
 import type { PropInfo } from '../shared/types'
@@ -243,7 +243,8 @@ export function schemaPlugin(rootRef: RootRef): Plugin {
         const absPath = resolve(root, componentPath)
 
         // Verify the file is inside the project root
-        if (!absPath.startsWith(root)) {
+        const rel = relative(root, absPath)
+        if (rel.startsWith('..') || rel.startsWith('/')) {
           res.writeHead(403, { 'Content-Type': 'application/json' })
           res.end(JSON.stringify({ error: 'Path outside project root' }))
           return

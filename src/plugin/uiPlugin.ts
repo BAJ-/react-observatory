@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
-import { resolve, dirname, extname } from 'node:path'
+import { resolve, relative, dirname, extname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Plugin } from 'vite'
 
@@ -58,6 +58,10 @@ export function uiPlugin(): Plugin {
       // /?render=&component=... loads ComponentRenderer via Vite's pipeline.
       server.middlewares.use((req, res, next) => {
         const url = req.url ?? ''
+        if (!url.startsWith(ROUTE_BASE)) {
+          next()
+          return
+        }
         const qs = url.indexOf('?')
         if (qs < 0) {
           next()
@@ -113,7 +117,8 @@ export function uiPlugin(): Plugin {
         const filePath = resolve(clientDir, assetPath.slice(1))
 
         // Security: ensure resolved path is within clientDir
-        if (!filePath.startsWith(clientDir)) {
+        const relPath = relative(clientDir, filePath)
+        if (relPath.startsWith('..') || relPath.startsWith('/')) {
           res.writeHead(403)
           res.end()
           return

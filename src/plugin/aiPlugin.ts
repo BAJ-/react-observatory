@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { resolve, relative } from 'node:path'
+import { resolve, relative, isAbsolute } from 'node:path'
 import type { Plugin } from 'vite'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { API_AI_MODELS, API_AI_CHAT } from '../shared/constants'
@@ -73,7 +73,7 @@ function readComponentSource(
 ): string | null {
   const absPath = resolve(root, componentPath)
   const rel = relative(root, absPath)
-  if (rel.startsWith('..')) return null
+  if (rel.startsWith('..') || isAbsolute(rel)) return null
   try {
     return readFileSync(absPath, 'utf-8')
   } catch {

@@ -1,4 +1,4 @@
-import { resolve, relative, dirname } from 'node:path'
+import { resolve, relative, isAbsolute, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
 import type { Plugin, ViteDevServer } from 'vite'
@@ -108,7 +108,7 @@ async function handleStress(
 
   const absPath = resolve(rootRef.root, component)
   const rel = relative(rootRef.root, absPath)
-  if (rel.startsWith('..')) {
+  if (rel.startsWith('..') || isAbsolute(rel)) {
     res.writeHead(403, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({ error: 'Path outside project root' }))
     return

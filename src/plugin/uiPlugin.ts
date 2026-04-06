@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
-import { resolve, relative, dirname, extname } from 'node:path'
+import { resolve, relative, isAbsolute, dirname, extname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Plugin } from 'vite'
 
@@ -118,7 +118,7 @@ export function uiPlugin(): Plugin {
 
         // Security: ensure resolved path is within clientDir
         const relPath = relative(clientDir, filePath)
-        if (relPath.startsWith('..') || relPath.startsWith('/')) {
+        if (relPath.startsWith('..') || isAbsolute(relPath)) {
           res.writeHead(403)
           res.end()
           return

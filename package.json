@@ -5,7 +5,7 @@
   "description": "Explore, stress-test, and get AI feedback on your React components",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/BAJ-/react-observatory.git"
+    "url": "git+https://github.com/BAJ-/reactoscope.git"
   },
   "license": "MIT",
   "bin": {

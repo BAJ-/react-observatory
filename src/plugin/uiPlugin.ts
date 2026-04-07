@@ -11,9 +11,6 @@ const RESOLVED_RENDER_ID = '\0' + VIRTUAL_RENDER_ID
 const VIRTUAL_UI_ID = 'virtual:observatory-ui'
 const RESOLVED_UI_ID = '\0' + VIRTUAL_UI_ID
 
-const VIRTUAL_UI_CSS_ID = 'virtual:observatory-ui.css'
-const RESOLVED_UI_CSS_ID = '\0' + VIRTUAL_UI_CSS_ID
-
 export function uiPlugin(): Plugin {
   const selfDir = dirname(fileURLToPath(import.meta.url))
   const renderEntry = resolve(selfDir, 'render', 'entry.js')
@@ -25,7 +22,6 @@ export function uiPlugin(): Plugin {
     resolveId(id) {
       if (id === VIRTUAL_RENDER_ID) return RESOLVED_RENDER_ID
       if (id === VIRTUAL_UI_ID) return RESOLVED_UI_ID
-      if (id === VIRTUAL_UI_CSS_ID) return RESOLVED_UI_CSS_ID
     },
     load(id) {
       if (id === RESOLVED_RENDER_ID && existsSync(renderEntry)) {
@@ -33,9 +29,6 @@ export function uiPlugin(): Plugin {
       }
       if (id === RESOLVED_UI_ID && existsSync(uiEntry)) {
         return readFileSync(uiEntry, 'utf-8')
-      }
-      if (id === RESOLVED_UI_CSS_ID && existsSync(uiCss)) {
-        return readFileSync(uiCss, 'utf-8')
       }
     },
     configureServer(server) {
@@ -93,14 +86,15 @@ export function uiPlugin(): Plugin {
         }
 
         // Serve the UI HTML for the base route
-        if (assetPath === '/' || assetPath === '/index.html') {
+        if (assetPath === '' || assetPath === '/' || assetPath === '/index.html') {
+          const cssContent = readFileSync(uiCss, 'utf-8')
           const html = `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reactoscope</title>
-  <link rel="stylesheet" href="/@id/__x00__${VIRTUAL_UI_CSS_ID}" />
+  <style>${cssContent}</style>
 </head>
 <body>
   <div id="root"></div>

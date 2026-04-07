@@ -86,7 +86,11 @@ export function uiPlugin(): Plugin {
         }
 
         // Serve the UI HTML for the base route
-        if (assetPath === '' || assetPath === '/' || assetPath === '/index.html') {
+        if (
+          assetPath === '' ||
+          assetPath === '/' ||
+          assetPath === '/index.html'
+        ) {
           const cssContent = readFileSync(uiCss, 'utf-8')
           const html = `<!doctype html>
 <html lang="en">

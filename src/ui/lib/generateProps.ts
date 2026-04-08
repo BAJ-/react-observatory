@@ -1,5 +1,5 @@
-import type { PropInfo } from '../shared/types'
-import { UNSET } from '../shared/constants'
+import type { PropInfo } from '@/shared/types'
+import { UNSET } from '@/shared/constants'
 
 export function generateProps(props: PropInfo[]): Record<string, unknown> {
   const result: Record<string, unknown> = {}

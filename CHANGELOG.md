@@ -8,6 +8,16 @@
 - Replaced static file server with virtual modules for serving the Observatory UI through Vite's transform pipeline.
 - Inlined CSS directly into served HTML instead of referencing via a virtual module.
 
+### Fixed
+
+- Replaced deprecated `external` option with `deps.neverBundle` in tsdown config.
+- Replaced deprecated `inlineDynamicImports` with `codeSplitting: false` in Vite UI build config.
+
+### Internal
+
+- Reorganized `src/ui/` into `components/`, `hooks/`, and `lib/` subdirectories.
+- Switched all internal imports to absolute paths using `@/` alias.
+
 ## [0.1.0] - 2026-04-06
 
 ### Added

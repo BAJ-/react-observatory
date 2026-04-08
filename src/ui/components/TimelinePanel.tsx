@@ -1,5 +1,9 @@
-import type { Timeline, TimelineNode } from './timelineTree'
-import { getChildren, getNodeLabel } from './timelineTree'
+import {
+  type Timeline,
+  type TimelineNode,
+  getChildren,
+  getNodeLabel,
+} from '@/lib/timelineTree'
 import { Save } from 'react-feather'
 
 interface TimelinePanelProps {

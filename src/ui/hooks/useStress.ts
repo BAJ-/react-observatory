@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
-import type { StressResult } from '../shared/analyzeHealth'
-import type { SerializableProps } from './resolveProps'
-import { API_STRESS } from '../shared/constants'
+import type { StressResult } from '@/shared/analyzeHealth'
+import type { SerializableProps } from '@/lib/resolveProps'
+import { API_STRESS } from '@/shared/constants'
 
 export interface StressRun {
   running: boolean

@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import type { PropInfo } from '../shared/types'
-import type { StressResult } from '../shared/analyzeHealth'
-import type { SerializableProps } from './resolveProps'
-import { UNSET, API_AI_MODELS, API_AI_CHAT } from '../shared/constants'
+import type { PropInfo } from '@/shared/types'
+import type { StressResult } from '@/shared/analyzeHealth'
+import type { SerializableProps } from '@/lib/resolveProps'
+import { UNSET, API_AI_MODELS, API_AI_CHAT } from '@/shared/constants'
 
 export interface AIModel {
   name: string

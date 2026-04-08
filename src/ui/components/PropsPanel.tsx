@@ -1,6 +1,9 @@
-import type { PropInfo } from '../shared/types'
-import { UNSET } from '../shared/constants'
-import { functionBehaviorOptions, type SerializableProps } from './resolveProps'
+import type { PropInfo } from '@/shared/types'
+import { UNSET } from '@/shared/constants'
+import {
+  functionBehaviorOptions,
+  type SerializableProps,
+} from '@/lib/resolveProps'
 
 interface PropsPanelProps {
   props: PropInfo[]

@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
-import type { StressRun } from './useStress'
+import type { StressRun } from '@/hooks/useStress'
 import {
   analyzeHealth,
   worstSeverity,
   type Finding,
-} from '../shared/analyzeHealth'
+} from '@/shared/analyzeHealth'
 import {
   X,
   RefreshCw,

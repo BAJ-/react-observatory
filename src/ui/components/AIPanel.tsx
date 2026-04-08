@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import type { AIState, AIModel, ChatMessage } from './useAI'
+import type { AIState, AIModel, ChatMessage } from '@/hooks/useAI'
 import { X, Send, Square, Trash2, Cpu, MessageSquare } from 'react-feather'
 
 interface AIPanelProps {

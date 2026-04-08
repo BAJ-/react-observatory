@@ -6,7 +6,7 @@ import {
   getChildren,
   toggleMarked,
   getMarkedSequence,
-} from './timelineTree'
+} from '@/lib/timelineTree'
 
 describe('createTimeline', () => {
   it('creates a timeline with one root node', () => {

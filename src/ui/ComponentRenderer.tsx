@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react'
-import type { PropInfo } from '../shared/types'
+import type { PropInfo } from '@/shared/types'
 import {
   resolveProps,
   type SerializableProps,
   readPropsFromUrl,
-} from './resolveProps'
+} from '@/lib/resolveProps'
 import { ErrorBoundary } from './ErrorBoundary'
 import {
   MSG_PROPS,
   MSG_RENDERED,
   API_SCHEMA,
   COMPONENT_ROOT_ID,
-} from '../shared/constants'
+} from '@/shared/constants'
 
 export function ComponentRenderer() {
   const params = new URLSearchParams(window.location.search)

@@ -1,6 +1,6 @@
 import { X } from 'react-feather'
-import type { PinnedVariant } from './usePinnedVariants'
-import { buildIframeSrc } from './buildIframeSrc'
+import type { PinnedVariant } from '@/hooks/usePinnedVariants'
+import { buildIframeSrc } from '@/lib/buildIframeSrc'
 
 interface VariantCardProps {
   variant: PinnedVariant

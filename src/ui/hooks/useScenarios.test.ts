@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useScenarios } from './useScenarios'
-import type { TimelineNode } from './timelineTree'
+import type { TimelineNode } from '@/lib/timelineTree'
 
 const node = (id: string, props: Record<string, unknown>): TimelineNode => ({
   id,

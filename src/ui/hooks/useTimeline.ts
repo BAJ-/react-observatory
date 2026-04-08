@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import type { SerializableProps } from './resolveProps'
-import type { Timeline } from './timelineTree'
+import type { SerializableProps } from '@/lib/resolveProps'
+import type { Timeline } from '@/lib/timelineTree'
 import {
   createTimeline,
   addNode as addTimelineNode,
@@ -8,7 +8,7 @@ import {
   getActiveNode,
   getMarkedSequence,
   toggleMarked as toggleTimelineMarked,
-} from './timelineTree'
+} from '@/ui/lib/timelineTree'
 
 interface UseTimelineReturn {
   timeline: Timeline

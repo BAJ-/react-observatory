@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import type { Scenario } from './useScenarios'
-import { getNodeLabel } from './timelineTree'
+import type { Scenario } from '@/hooks/useScenarios'
+import { getNodeLabel } from '@/lib/timelineTree'
 import {
   Play,
   ChevronLeft,

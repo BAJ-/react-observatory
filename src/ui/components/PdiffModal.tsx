@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { PdiffRun } from './usePdiff'
+import type { PdiffRun } from '@/hooks/usePdiff'
 import { X, ChevronLeft, ChevronRight } from 'react-feather'
 
 interface PdiffModalProps {

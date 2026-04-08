@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useTimeline } from './useTimeline'
-import { getChildren } from './timelineTree'
+import { getChildren } from '@/lib/timelineTree'
 
 describe('useTimeline', () => {
   it('starts with an empty-props root node', () => {

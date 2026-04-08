@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import type { TimelineNode } from './timelineTree'
+import type { TimelineNode } from '@/lib/timelineTree'
 
 export interface Scenario {
   id: string

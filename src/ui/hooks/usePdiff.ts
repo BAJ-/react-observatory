@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import type { Scenario } from './useScenarios'
 import { compareSnapshots } from './pdiff'
-import { captureIframe } from './captureIframe'
-import { MSG_PROPS, MSG_RENDERED } from '../shared/constants'
+import { captureIframe } from '@/lib/captureIframe'
+import { MSG_PROPS, MSG_RENDERED } from '@/shared/constants'
 
 export interface StepPairDiff {
   beforeUrl: string

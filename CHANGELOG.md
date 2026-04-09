@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-09
+
 ### Changed
 
 - Externalized React from all build outputs — React is now resolved from the host project's `node_modules` at runtime, reducing package size by 32% (146 KB → 99 KB compressed).
@@ -34,5 +36,6 @@
 - AI feedback via local Ollama integration.
 - Visual snapshot diffing.
 
-[Unreleased]: https://github.com/BAJ-/reactoscope/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/BAJ-/reactoscope/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/BAJ-/reactoscope/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/BAJ-/reactoscope/releases/tag/v0.1.0

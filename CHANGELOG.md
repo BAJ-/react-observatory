@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+### Added
+
+- Client-side stress testing — renders the component in the iframe using React Profiler for timing and `performance.measureUserAgentSpecificMemory()` for heap tracking.
+- Progressive results — timing/determinism findings appear immediately while memory detection and SSR run in parallel.
+- Memory leak detection with early exit when signal is clear (definite leak or stable).
+- `runId` scoping to prevent stale message races during auto-run.
+- COOP/COEP headers (`credentialless`) on observatory routes for cross-origin isolation.
+
+### Changed
+
+- Switched CLI imports from static ESM to dynamic `await import()` for broader compatibility.
+- Extracted shared `httpUtils` (`readBody`, `jsonResponse`) from plugin modules.
+
+### Removed
+
+- `StressModal` component (replaced by progressive `HealthPanel` UI).
+
 ## [0.2.0] - 2026-04-09
 
 ### Changed

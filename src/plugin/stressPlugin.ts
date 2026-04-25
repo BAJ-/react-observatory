@@ -115,14 +115,13 @@ async function handleStress(
     const hydratedProps = hydrateProps(props, propInfos)
 
     try {
-      // Warmup: render without measuring to let JIT settle
       for (let i = 0; i < warmup; i++) {
         render(Component, hydratedProps)
       }
 
       runGC()
 
-      // ── Phase 1: Determinism + timing (use requested iteration count) ──
+      // ── Determinism + timing (use requested iteration count) ──
       const timings: number[] = []
       let firstOutput: string | null = null
       let mismatchedRenders = 0
@@ -144,9 +143,7 @@ async function handleStress(
         }
       }
 
-      // ── Phase 2: Memory leak detection (multi-round) ──
-      // Render in rounds of 500, measuring heap after each round.
-      // If memory grows consistently across rounds, there's a leak.
+      // ── Memory leak detection ──
       const gcAvailable = 'gc' in globalThis
       const rounds = 10
       const rendersPerRound = 500
@@ -154,8 +151,6 @@ async function handleStress(
 
       if (gcAvailable) {
         heapPerRound = []
-
-        // Baseline: GC and measure before any rounds
         runGC()
         heapPerRound.push(process.memoryUsage().heapUsed)
 

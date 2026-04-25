@@ -69,7 +69,10 @@ function getHandlers(ollamaUrl = 'http://localhost:11434') {
   > = {}
   const fakeServer = {
     middlewares: {
-      use(path: string, fn: (req: IncomingMessage, res: ServerResponse) => void) {
+      use(
+        path: string,
+        fn: (req: IncomingMessage, res: ServerResponse) => void,
+      ) {
         handlers[path] = fn
       },
     },
@@ -203,7 +206,10 @@ describe('aiPlugin', () => {
 
   describe('handleModels', () => {
     it('returns 502 when Ollama is unreachable', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('ECONNREFUSED')))
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockRejectedValue(new Error('ECONNREFUSED')),
+      )
 
       const handlers = getHandlers()
       const req = fakeReq('GET')

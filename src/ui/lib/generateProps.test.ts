@@ -62,23 +62,17 @@ describe('generateProps', () => {
   })
 
   it('generates empty array for array props', () => {
-    const result = generateProps([
-      prop({ name: 'items', type: 'array' }),
-    ])
+    const result = generateProps([prop({ name: 'items', type: 'array' })])
     expect(result.items).toEqual([])
   })
 
   it('generates empty object for object props', () => {
-    const result = generateProps([
-      prop({ name: 'config', type: 'object' }),
-    ])
+    const result = generateProps([prop({ name: 'config', type: 'object' })])
     expect(result.config).toEqual({})
   })
 
   it('generates empty string for unknown type', () => {
-    const result = generateProps([
-      prop({ name: 'mystery', type: 'unknown' }),
-    ])
+    const result = generateProps([prop({ name: 'mystery', type: 'unknown' })])
     expect(result.mystery).toBe('')
   })
 

@@ -6,5 +6,9 @@ interface BasicProps {
 }
 
 export function BasicComponent({ label, count, active }: BasicProps) {
-  return <div>{label} {count} {active}</div>
+  return (
+    <div>
+      {label} {count} {active}
+    </div>
+  )
 }

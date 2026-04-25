@@ -5,6 +5,6 @@ interface CallbackProps {
   fetchUser: () => Promise<{ name: string }>
 }
 
-export function CallbackComponent(_props: CallbackProps) {
-  return <div />
+export function CallbackComponent(props: CallbackProps) {
+  return <div data-fn={typeof props.getData} />
 }

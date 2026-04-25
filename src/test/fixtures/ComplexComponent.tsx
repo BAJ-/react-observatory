@@ -8,6 +8,6 @@ interface ComplexProps {
   config: { theme: string }
 }
 
-export default function ComplexComponent(_props: ComplexProps) {
-  return <div />
+export default function ComplexComponent(props: ComplexProps) {
+  return <div data-size={props.size} />
 }

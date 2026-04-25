@@ -22,13 +22,25 @@ describe('extractProps', () => {
       expect(props).toHaveLength(3)
 
       const label = findProp(props, 'label')
-      expect(label).toMatchObject({ name: 'label', type: 'string', required: true })
+      expect(label).toMatchObject({
+        name: 'label',
+        type: 'string',
+        required: true,
+      })
 
       const count = findProp(props, 'count')
-      expect(count).toMatchObject({ name: 'count', type: 'number', required: true })
+      expect(count).toMatchObject({
+        name: 'count',
+        type: 'number',
+        required: true,
+      })
 
       const active = findProp(props, 'active')
-      expect(active).toMatchObject({ name: 'active', type: 'boolean', required: true })
+      expect(active).toMatchObject({
+        name: 'active',
+        type: 'boolean',
+        required: true,
+      })
     })
   })
 

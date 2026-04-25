@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { PassThrough } from 'node:stream'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { ViteDevServer } from 'vite'
@@ -311,7 +311,9 @@ describe('stressPlugin', () => {
           render: () => {
             callCount++
             // Warmup: 1 call, then 3 measured — vary the measured ones
-            return callCount <= 1 ? '<div>warmup</div>' : `<div>${callCount}</div>`
+            return callCount <= 1
+              ? '<div>warmup</div>'
+              : `<div>${callCount}</div>`
           },
         })
 

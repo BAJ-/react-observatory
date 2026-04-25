@@ -11,14 +11,12 @@ import type { StressResult } from '@/shared/analyzeHealth'
 
 const FAKE_ORIGIN = 'http://localhost:3000'
 
-function fakeStressResult(
-  overrides?: Partial<StressResult>,
-): StressResult {
+function fakeStressResult(overrides?: Partial<StressResult>): StressResult {
   return {
     iterations: 100,
     totalRenders: 100,
     warmup: 10,
-    timings: { mean: 1, median: 1, p95: 2, stddev: 0.1, raw: [1] },
+    timings: { min: 0.5, max: 2, mean: 1, median: 1, p95: 2, stddev: 0.1 },
     mismatchedRenders: 0,
     outputLengths: [100],
     outputByteSize: 100,
@@ -294,7 +292,7 @@ describe('useStress', () => {
   })
 
   it('aborts previous fetch when re-running', async () => {
-    let abortSignals: AbortSignal[] = []
+    const abortSignals: AbortSignal[] = []
     vi.mocked(fetch).mockImplementation(
       (_url: string | URL | Request, init?: RequestInit) => {
         if (init?.signal) abortSignals.push(init.signal)

@@ -155,9 +155,9 @@ describe('getNodeLabel', () => {
   })
 
   it('returns "no change" when props are identical', () => {
-    expect(
-      getNodeLabel(node({ color: 'red' }), parent({ color: 'red' })),
-    ).toBe('no change')
+    expect(getNodeLabel(node({ color: 'red' }), parent({ color: 'red' }))).toBe(
+      'no change',
+    )
   })
 
   it('shows changed prop values', () => {
@@ -175,9 +175,9 @@ describe('getNodeLabel', () => {
   })
 
   it('formats UNSET values as "unset"', () => {
-    expect(
-      getNodeLabel(node({ color: UNSET }), parent({ color: 'red' })),
-    ).toBe('color: unset')
+    expect(getNodeLabel(node({ color: UNSET }), parent({ color: 'red' }))).toBe(
+      'color: unset',
+    )
   })
 
   it('formats strings with single quotes', () => {
@@ -187,9 +187,9 @@ describe('getNodeLabel', () => {
   })
 
   it('formats numbers without quotes', () => {
-    expect(
-      getNodeLabel(node({ count: 42 }), parent({ count: 0 })),
-    ).toBe('count: 42')
+    expect(getNodeLabel(node({ count: 42 }), parent({ count: 0 }))).toBe(
+      'count: 42',
+    )
   })
 
   it('formats booleans without quotes', () => {
@@ -199,16 +199,16 @@ describe('getNodeLabel', () => {
   })
 
   it('formats null and undefined via String()', () => {
-    expect(
-      getNodeLabel(node({ value: null }), parent({ value: 'x' })),
-    ).toBe('value: null')
+    expect(getNodeLabel(node({ value: null }), parent({ value: 'x' }))).toBe(
+      'value: null',
+    )
   })
 
   it('only detects changes present in child props', () => {
     // Parent has a prop the child doesn't — this is NOT detected as a change
     // because getNodeLabel iterates node.props, not parent.props
-    expect(
-      getNodeLabel(node({ a: 1 }), parent({ a: 1, b: 2 })),
-    ).toBe('no change')
+    expect(getNodeLabel(node({ a: 1 }), parent({ a: 1, b: 2 }))).toBe(
+      'no change',
+    )
   })
 })

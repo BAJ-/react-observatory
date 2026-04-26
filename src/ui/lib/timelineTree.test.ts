@@ -6,7 +6,10 @@ import {
   getChildren,
   toggleMarked,
   getMarkedSequence,
+  getNodeLabel,
+  type TimelineNode,
 } from '@/lib/timelineTree'
+import { UNSET } from '@/shared/constants'
 
 describe('createTimeline', () => {
   it('creates a timeline with one root node', () => {
@@ -131,5 +134,81 @@ describe('getMarkedSequence', () => {
 
     const seq = getMarkedSequence(tl)
     expect(seq.map((n) => n.props.v)).toEqual([1, 2, 3, 4, 5])
+  })
+})
+
+describe('getNodeLabel', () => {
+  const node = (props: Record<string, unknown>): TimelineNode => ({
+    id: 'child',
+    parentId: 'parent',
+    props,
+  })
+
+  const parent = (props: Record<string, unknown>): TimelineNode => ({
+    id: 'parent',
+    parentId: null,
+    props,
+  })
+
+  it('returns "initial" when there is no parent', () => {
+    expect(getNodeLabel(node({ v: 1 }), null)).toBe('initial')
+  })
+
+  it('returns "no change" when props are identical', () => {
+    expect(getNodeLabel(node({ color: 'red' }), parent({ color: 'red' }))).toBe(
+      'no change',
+    )
+  })
+
+  it('shows changed prop values', () => {
+    expect(
+      getNodeLabel(node({ color: 'blue' }), parent({ color: 'red' })),
+    ).toBe("color: 'blue'")
+  })
+
+  it('shows multiple changes comma-separated', () => {
+    const label = getNodeLabel(
+      node({ color: 'blue', size: 10 }),
+      parent({ color: 'red', size: 5 }),
+    )
+    expect(label).toBe("color: 'blue', size: 10")
+  })
+
+  it('formats UNSET values as "unset"', () => {
+    expect(getNodeLabel(node({ color: UNSET }), parent({ color: 'red' }))).toBe(
+      'color: unset',
+    )
+  })
+
+  it('formats strings with single quotes', () => {
+    expect(
+      getNodeLabel(node({ name: 'hello' }), parent({ name: 'world' })),
+    ).toBe("name: 'hello'")
+  })
+
+  it('formats numbers without quotes', () => {
+    expect(getNodeLabel(node({ count: 42 }), parent({ count: 0 }))).toBe(
+      'count: 42',
+    )
+  })
+
+  it('formats booleans without quotes', () => {
+    expect(
+      getNodeLabel(node({ active: true }), parent({ active: false })),
+    ).toBe('active: true')
+  })
+
+  it('formats null and undefined via String()', () => {
+    expect(getNodeLabel(node({ value: null }), parent({ value: 'x' }))).toBe(
+      'value: null',
+    )
+  })
+
+  it('only detects changes present in child props', () => {
+    // Parent has a prop the child doesn't — this is NOT detected as a change
+    // because getNodeLabel iterates node.props, not parent.props
+    expect(getNodeLabel(node({ a: 1 }), parent({ a: 1, b: 2 }))).toBe(
+      'no change',
+    )
   })
 })
